@@ -21,28 +21,38 @@ Design rationale: [phase1-mobile-design.md](phase1-mobile-design.md).
 | Telegram bot | `app/Services/Telegram/TelegramApi.php`, `TelegramBotService.php`, `app/Console/Commands/TelegramPoll.php` (`php artisan telegram:poll`), buttons in `RealTimeNotification::toTelegram()` |
 | Fixes | migration adding `telegram_link_token` / `telegram_linked_at` (profile "link Telegram" crashed without them); Viewer menu used a non-existent route; Echo no longer breaks all page scripts when Reverb is not configured |
 
-## 2. Server setup (Windows Server)
+## 2. Server setup (Ubuntu 24.04 · Apache · PHP 8.4 — server 172.16.10.105)
 
-### 2.1 Code
+Current layout on the server:
 
-```powershell
-git pull
+| Instance | Path | Port | Database |
+|---|---|---|---|
+| Production | `/var/www/html/ticket-system` | 80 | production DB |
+| Stage | `/var/www/html/ticket-system-stage` | 9090 | `ticket_system_stage` |
+| Mobile test | `/var/www/html/ticketsystem-mobile` | 9091 | `ticket_system_mobile` (copy of stage) |
+
+The mobile folder pulls from GitHub with a **read-only deploy key** (`~/.ssh/ticketsystem_mobile_deploy`, set as `core.sshCommand` in the repo).
+
+### 2.1 Code (as `ost`, no sudo)
+
+```bash
+cd /var/www/html/ticketsystem-mobile
+git pull --ff-only
 composer install --no-dev --optimize-autoloader
-npm ci
-npm run build
+npm ci && npm run build
 php artisan migrate --force
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
+php artisan optimize:clear      # use config:cache/route:cache/view:cache in production
 ```
 
-PHP extensions needed (in `php.ini`): `openssl`, `gmp` (or `bcmath`), `mbstring`, `curl`, `fileinfo`, `ldap`.
+PHP extensions needed: `openssl`, `bcmath` or `gmp`, `mbstring`, `curl`, `ldap` (all present on the server).
+`storage/` and `bootstrap/cache` must be group-writable by `www-data`.
 
 ### 2.2 `.env`
 
 ```dotenv
 APP_URL=https://tickets.<hospital-domain>
 SESSION_SECURE_COOKIE=true
+SESSION_COOKIE=ticketsystem_mobile_session   # different per instance on the same host
 
 TELEGRAM_BOT_TOKEN=<new token from BotFather>
 TELEGRAM_BOT_USERNAME=<bot username without @>
@@ -54,49 +64,64 @@ VAPID_PRIVATE_KEY=
 # WEBPUSH_PROXY=http://proxy:8080
 ```
 
-Generate VAPID keys **once** (changing them later breaks every existing subscription):
+Generate VAPID keys **once** — changing them later breaks every existing subscription:
 
-```powershell
-# Windows PHP needs an OpenSSL config to create EC keys
-$env:OPENSSL_CONF = "C:\php\extras\ssl\openssl.cnf"
+```bash
 php artisan webpush:vapid
 ```
 
-### 2.3 HTTPS (required — a PWA and push do not work over plain HTTP)
+(On Windows PHP, set `OPENSSL_CONF` to PHP's `extras/ssl/openssl.cnf` first.)
 
-1. Internal DNS: `A  tickets.<domain>  →  <server internal IP>`.
-2. Install **win-acme** (`wacs.exe`) and request a certificate with the **DNS-01** validation plugin for your public DNS provider. It creates a Scheduled Task that renews automatically.
-   - IIS: win-acme binds the certificate to the site.
-   - Apache (XAMPP): choose PEM output to a fixed folder, point `SSLCertificateFile` / `SSLCertificateKeyFile` to it, and add an Apache restart to the renewal script.
-3. If the DNS provider has no API, delegate `_acme-challenge.tickets.<domain>` to one that does (e.g. acme-dns).
+The **test instance** additionally uses `BROADCAST_CONNECTION=log`, an empty `VITE_REVERB_APP_KEY`, `QUEUE_CONNECTION=sync` and an empty `TELEGRAM_BOT_TOKEN` until a separate test bot exists, so it never reaches production Reverb or real staff.
 
-### 2.4 Background services (NSSM)
+### 2.3 HTTPS (required — app install and push do not work over plain HTTP)
 
-```powershell
-nssm install TicketsQueue    "C:\php\php.exe" "C:\inetpub\ticketsystem\artisan queue:work --tries=3"
-nssm install TicketsReverb   "C:\php\php.exe" "C:\inetpub\ticketsystem\artisan reverb:start"
-nssm install TicketsTelegram "C:\php\php.exe" "C:\inetpub\ticketsystem\artisan telegram:poll"
-nssm set TicketsTelegram AppDirectory "C:\inetpub\ticketsystem"
-nssm start TicketsTelegram
+1. Internal DNS: `A  tickets.<domain>  →  172.16.10.105`.
+2. `sudo apt install certbot python3-certbot-dns-<provider>` and request the certificate with **DNS-01** (the server is not reachable from the internet, so HTTP-01 cannot work). Certbot installs a renewal timer.
+3. `sudo a2enmod ssl headers && sudo a2ensite` a `*:443` vhost pointing to `public/` with the certificate paths; allow 443 in `ufw`.
+4. If the DNS provider has no API, delegate `_acme-challenge.tickets.<domain>` to one that does (e.g. acme-dns).
+
+### 2.4 Background services (systemd)
+
+Production already runs `laravel-reverb.service` and `laravel-worker.service`. For the bot add one unit per instance (only **one** poller may run per bot token):
+
+```ini
+# /etc/systemd/system/ticketsystem-mobile-telegram.service
+[Unit]
+Description=Ticket system mobile - Telegram bot polling
+After=network-online.target mysql.service
+
+[Service]
+User=www-data
+WorkingDirectory=/var/www/html/ticketsystem-mobile
+ExecStart=/usr/bin/php artisan telegram:poll
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
 ```
 
-Set `AppDirectory` for each service. Scheduler: Task Scheduler → every minute → `php artisan schedule:run`.
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now ticketsystem-mobile-telegram
+```
 
-`telegram:poll` calls `deleteWebhook` on start, then long-polls `getUpdates`. Only **one** poller may run per bot token.
+`telegram:poll` calls `deleteWebhook` on start, then long-polls `getUpdates`.
 
-### 2.5 Outbound firewall (port 443)
+### 2.5 Firewall
 
-`api.telegram.org`, `fcm.googleapis.com`, `*.push.apple.com`, `updates.push.services.mozilla.com`, `*.notify.windows.com`, `acme-v02.api.letsencrypt.org`, your DNS provider's API.
+- Inbound (`ufw`): 80 (production), 9090 (stage), 9091 (mobile test), 443 once HTTPS exists.
+- Outbound 443 (already open on the server): `api.telegram.org`, `fcm.googleapis.com`, `*.push.apple.com`, `updates.push.services.mozilla.com`, `acme-v02.api.letsencrypt.org`, the DNS provider API, `github.com`.
 
-### 2.6 IIS only
+### 2.6 Apache notes
 
-- Make sure `.json` is served as `application/json` (manifest) and `.js` as `application/javascript` (service worker).
 - `sw.js` must be served from the site root (`/sw.js`) — do not move it.
-- WebSockets for Reverb: enable the *WebSocket Protocol* Windows feature + URL Rewrite/ARR proxy to the Reverb port.
+- Reverb behind HTTPS: `a2enmod proxy proxy_http proxy_wstunnel` and proxy `/app` to `127.0.0.1:8080`.
 
 ## 3. Test checklist
 
-Automated (local, SQLite): `php artisan test` — 28 tests covering TicketService, the HTTP flows, push subscription routes, the manifest/install page and the Telegram bot flows (with the Telegram API faked).
+Automated (local, SQLite): `php artisan test` — 29 tests covering TicketService, the HTTP flows, push subscription routes, the manifest/install page and the Telegram bot flows (with the Telegram API faked).
 
 Local demo data: `php artisan db:seed --class=DemoSeeder` (credentials are in the seeder; never run in production).
 

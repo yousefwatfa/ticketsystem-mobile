@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Cache;
  * Long-polls Telegram for bot updates. The server only makes outbound
  * requests, so it works on the hospital's internal network.
  *
- * Run as a Windows service (NSSM) or under Supervisor/systemd:
+ * Run as a systemd service (see Documantation/mobile-deployment.md):
  *   php artisan telegram:poll
  */
 class TelegramPoll extends Command

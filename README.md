@@ -7,6 +7,7 @@ Laravel 12 IT help-desk ticket system with Phase 1 mobile access:
 - **Telegram bot** — open, follow, reply to and confirm tickets from anywhere; admins can take and finish tickets. Uses long polling, so the server stays internal.
 
 Docs:
+- **[PWA documentation with screenshots (Arabic)](docs/pwa/README.md)**
 - [Phase 1 design](Documantation/phase1-mobile-design.md)
 - [Deployment & testing guide](Documantation/mobile-deployment.md)
 
