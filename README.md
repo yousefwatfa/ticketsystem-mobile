@@ -10,6 +10,7 @@ Docs:
 - **[PWA documentation with screenshots (Arabic)](docs/pwa/README.md)**
 - [Phase 1 design](Documantation/phase1-mobile-design.md)
 - [Deployment & testing guide](Documantation/mobile-deployment.md)
+- **[Native app (Expo) with screenshots](docs/native/APP.md)** · [API v1](docs/native/API.md) · [Plan](docs/native/PLAN.md)
 
 ## Requirements
 

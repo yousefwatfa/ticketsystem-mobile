@@ -47,10 +47,10 @@ Global: RTL Arabic, offline/"not on hospital network" screen, configurable serve
 
 ## Milestones
 
-1. **API** — Sanctum, LDAP service extraction, endpoints, Expo push channel, tests. *(this step)*
-2. **App skeleton** — Expo + TypeScript + expo-router, RTL, auth flow, API client, network-state screen.
-3. **Staff screens** — tickets, details, create with camera, notifications, push.
-4. **Admin screens** — department tickets, actions.
+1. **API** — Sanctum, LDAP service extraction, endpoints, Expo push channel, tests. ✅ done
+2. **App skeleton** — Expo + TypeScript + expo-router, RTL, auth flow, API client, network-state screen. ✅ done
+3. **Staff screens** — tickets, details, create with camera ✅ · notifications screen + push ⏳
+4. **Admin screens** — department tickets, actions. ✅ done ([screenshots](APP.md))
 5. **Builds** — Android APK (EAS or local), iOS via EAS + TestFlight (needs Apple Developer account).
 6. **Pilot** on the 9091 test instance, then production.
 
