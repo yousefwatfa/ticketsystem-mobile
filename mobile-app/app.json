@@ -57,7 +57,14 @@
           "ios": {}
         }
       ],
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-notifications",
+        {
+          "color": "#0077C2",
+          "defaultChannel": "tickets"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

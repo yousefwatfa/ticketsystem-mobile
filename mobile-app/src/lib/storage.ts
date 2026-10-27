@@ -45,4 +45,5 @@ export const storage = {
 export const KEYS = {
   token: 'auth_token',
   serverUrl: 'server_url',
+  pushToken: 'push_token',
 } as const;

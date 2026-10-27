@@ -6,6 +6,7 @@ import { I18nManager, Platform } from 'react-native';
 
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { colors } from '@/lib/theme';
+import { useNotificationTaps } from '@/lib/useNotificationTaps';
 
 // Arabic-only app: always right-to-left (native builds also force it via the expo-localization plugin)
 I18nManager.allowRTL(true);
@@ -19,6 +20,7 @@ SplashScreen.preventAutoHideAsync();
 
 function RootNavigator() {
   const { user, ready } = useAuth();
+  useNotificationTaps(ready && !!user);
 
   useEffect(() => {
     if (ready) SplashScreen.hideAsync();
@@ -40,6 +42,7 @@ function RootNavigator() {
       <Stack.Protected guard={!!user}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="ticket/[id]" options={{ title: 'تفاصيل التذكرة', headerBackTitle: 'رجوع' }} />
+        <Stack.Screen name="notifications" options={{ title: 'الإشعارات', headerBackTitle: 'رجوع' }} />
       </Stack.Protected>
     </Stack>
   );

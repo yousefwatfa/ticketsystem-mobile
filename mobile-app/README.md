@@ -58,4 +58,22 @@ npx eas-cli@latest build -p ios                         # needs an Apple Develop
 ```
 
 - Android allows plain HTTP to the internal server (`usesCleartextTraffic` in `app.json`) for the test phase. iOS blocks plain HTTP — enable HTTPS on the server before the iPhone pilot (it is also needed to protect the AD password on Wi-Fi).
-- Push notifications (Expo push token → `POST /api/v1/devices`) are the next milestone; the server side is already done.
+## Push notifications
+
+Implemented in `src/lib/push.ts`, `src/lib/useNotificationTaps.ts`, `src/lib/unread.ts`, `src/app/notifications.tsx`, `src/components/notification-bell.tsx`:
+
+- After sign-in / session restore: create the Android channel `tickets`, ask permission, get the Expo push token, `POST /api/v1/devices`. Sign-out calls `DELETE /api/v1/devices` first.
+- Tapping a notification opens `/ticket/{data.ticket_id}`, including when the tap launched the app.
+- Bell with unread badge in every tab header; the notifications screen marks all as read.
+- Account screen shows the push state (enabled / denied / unavailable + reason) with a retry button.
+
+To make it work on a phone:
+
+```bash
+npx eas-cli@latest init                                   # adds extra.eas.projectId to app.json
+npx eas-cli@latest build -p android --profile development # or preview
+```
+
+Remote push does **not** work in Expo Go on Android (SDK 53+) — the app detects this and explains it in the Account screen. Web has no push; the bell and list still work.
+
+Local dev on Windows: PHP has no CA bundle, so `ExpoPushChannel` cannot reach `exp.host` over HTTPS (`cURL error 60`). Set `curl.cainfo` in `php.ini` if you need it locally; the Ubuntu server is fine (verified).

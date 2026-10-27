@@ -1,6 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Tabs } from 'expo-router';
 
+import { NotificationBell } from '@/components/notification-bell';
 import { useAuth } from '@/lib/auth';
 import { colors } from '@/lib/theme';
 
@@ -17,6 +18,7 @@ export default function TabsLayout() {
         headerStyle: { backgroundColor: colors.surface },
         headerTitleStyle: { fontWeight: '800', color: colors.text },
         sceneStyle: { backgroundColor: colors.background },
+        headerRight: () => <NotificationBell />,
       }}>
       <Tabs.Screen
         name="index"
