@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use NotificationChannels\WebPush\HasPushSubscriptions;
+use Laravel\Sanctum\HasApiTokens;
 use App\Models\Department;
 use App\Models\Note;
 use App\Models\Hospital;
@@ -15,7 +16,7 @@ use App\Models\Hospital;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasPushSubscriptions;
+    use HasApiTokens, HasFactory, Notifiable, HasPushSubscriptions;
 
     /**
      * The attributes that are mass assignable.
@@ -69,6 +70,12 @@ class User extends Authenticatable
     public function hospitals()
     {
         return $this->belongsToMany(Hospital::class);
+    }
+
+    /** Phones running the native app (Expo push tokens). */
+    public function deviceTokens()
+    {
+        return $this->hasMany(DeviceToken::class);
     }
 
     public function receivesBroadcastNotificationsOn()

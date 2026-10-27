@@ -34,6 +34,11 @@ return [
         ],
     ],
 
+    // Expo push for the native app (access token optional; set it if "enhanced push security" is enabled in Expo)
+    'expo' => [
+        'access_token' => env('EXPO_ACCESS_TOKEN'),
+    ],
+
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),

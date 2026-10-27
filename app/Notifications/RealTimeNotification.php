@@ -12,6 +12,7 @@ use NotificationChannels\Telegram\TelegramChannel;
 use NotificationChannels\Telegram\TelegramMessage;
 use NotificationChannels\WebPush\WebPushChannel;
 use NotificationChannels\WebPush\WebPushMessage;
+use App\Notifications\Channels\ExpoPushChannel;
 
 class RealTimeNotification extends Notification implements ShouldBroadcastNow{
     use Queueable;
@@ -38,6 +39,11 @@ class RealTimeNotification extends Notification implements ShouldBroadcastNow{
             $channels[] = WebPushChannel::class;
         }
 
+        // native app (Expo push)
+        if (method_exists($notifiable, 'deviceTokens') && $notifiable->deviceTokens()->exists()) {
+            $channels[] = ExpoPushChannel::class;
+        }
+
         // user object may have telegram_number property
         if (!empty($notifiable->telegram_number)) {
             $channels[] = TelegramChannel::class;
@@ -52,6 +58,16 @@ class RealTimeNotification extends Notification implements ShouldBroadcastNow{
         }
 
         return array_unique($channels);
+    }
+
+    public function toExpoPush($notifiable): array
+    {
+        return [
+            'title' => 'الدعم الفني' . ($this->ticketId ? " - تذكرة #{$this->ticketId}" : ''),
+            'body' => $this->message,
+            // the app opens the ticket screen from this
+            'data' => ['ticket_id' => $this->ticketId],
+        ];
     }
 
     public function toWebPush($notifiable, $notification)

@@ -25,6 +25,17 @@ class TicketWebFlowTest extends TestCase
         $this->setUpTicketWorld();
     }
 
+    public function test_web_login_for_local_account_still_works(): void
+    {
+        $user = $this->member(['auth_type' => 'normal']);
+
+        $this->post('/login', ['username' => $user->username, 'password' => 'wrong'])->assertSessionHasErrors('username');
+        $this->assertGuest();
+
+        $this->post('/login', ['username' => $user->username, 'password' => 'password'])->assertRedirect('/dashboard');
+        $this->assertAuthenticatedAs($user);
+    }
+
     public function test_member_creates_ticket_with_compressed_photo(): void
     {
         $member = $this->member();
