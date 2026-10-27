@@ -1,0 +1,182 @@
+/*
+ * Mobile / PWA layer.
+ * Follows UI UX Pro Max rules: 48px touch targets, safe-area insets,
+ * content never hidden behind fixed bars, labelled bottom nav (max 5),
+ * visible focus, reduced-motion support.
+ */
+:root {
+    --m-primary: #009ef7;
+    --m-primary-strong: #0077c2;
+    --m-text: #181c32;
+    --m-muted: #5e6278;
+    --m-surface: #ffffff;
+    --m-border: #e4e6ef;
+    --m-nav-height: 64px;
+    --m-touch: 48px;
+    --m-radius: 14px;
+    --m-safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Remove 300ms tap delay on touch devices */
+a, button, input, select, textarea, label, .btn { touch-action: manipulation; }
+
+/* ---------- Bottom navigation ---------- */
+.mobile-bottom-nav {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 1040;
+    display: flex;
+    align-items: stretch;
+    justify-content: space-around;
+    height: calc(var(--m-nav-height) + var(--m-safe-bottom));
+    padding-bottom: var(--m-safe-bottom);
+    background: var(--m-surface);
+    border-top: 1px solid var(--m-border);
+    box-shadow: 0 -4px 16px rgba(24, 28, 50, 0.06);
+}
+
+.mobile-bottom-nav__item {
+    flex: 1 1 0;
+    min-width: var(--m-touch);
+    min-height: var(--m-touch);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    color: var(--m-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 150ms ease-out;
+}
+
+.mobile-bottom-nav__item i { font-size: 1.35rem; line-height: 1; }
+.mobile-bottom-nav__item:hover { color: var(--m-primary-strong); }
+.mobile-bottom-nav__item.is-active { color: var(--m-primary-strong); }
+.mobile-bottom-nav__item:active { opacity: 0.7; }
+.mobile-bottom-nav__item:focus-visible { outline: 3px solid var(--m-primary-strong); outline-offset: -3px; border-radius: 10px; }
+
+.mobile-bottom-nav__fab {
+    width: 44px;
+    height: 44px;
+    margin-top: -18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--m-primary-strong);
+    color: #fff;
+    box-shadow: 0 6px 16px rgba(0, 119, 194, 0.35);
+}
+.mobile-bottom-nav__fab i { font-size: 1.4rem; color: #fff; }
+
+/* Keep page content and SweetAlert toasts clear of the fixed bar */
+@media (max-width: 991.98px) {
+    body.has-bottom-nav { padding-bottom: calc(var(--m-nav-height) + var(--m-safe-bottom) + 12px); }
+    body.has-bottom-nav .content { padding-top: 1.25rem !important; padding-bottom: 1.25rem !important; }
+    #kt_header { padding-top: env(safe-area-inset-top, 0px); }
+}
+
+/* ---------- Touch-friendly forms ---------- */
+@media (max-width: 767.98px) {
+    .form-control, .form-select, .select2-container .select2-selection--single { min-height: var(--m-touch); font-size: 1rem; }
+    .btn { min-height: 44px; }
+    .card .card-header { flex-wrap: wrap; gap: 0.5rem; }
+}
+
+/* ---------- Dashboard hero ---------- */
+.dashboard-hero { height: 192px; }
+.dashboard-main { margin-top: -64px; }
+@media (max-width: 767.98px) {
+    .dashboard-hero { height: auto; border-radius: var(--m-radius) !important; margin-bottom: 16px; }
+    .dashboard-hero h1 { font-size: 1.6rem; }
+    .dashboard-main { margin-top: 0; padding-inline: 0; }
+}
+
+/* ---------- Ticket cards (mobile list) ---------- */
+.ticket-card {
+    display: block;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    background: var(--m-surface);
+    border: 1px solid var(--m-border);
+    border-radius: var(--m-radius);
+    color: var(--m-text);
+    text-decoration: none;
+    transition: background-color 150ms ease-out;
+}
+.ticket-card:hover, .ticket-card:active { background: #f5f8fa; color: var(--m-text); }
+.ticket-card:focus-visible { outline: 3px solid var(--m-primary-strong); outline-offset: 2px; }
+.ticket-card__title { font-weight: 700; font-size: 1rem; line-height: 1.5; margin: 4px 0; }
+.ticket-card__meta { color: var(--m-muted); font-size: 0.85rem; display: flex; flex-wrap: wrap; gap: 4px 12px; }
+
+.status-chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; scrollbar-width: none; }
+.status-chips::-webkit-scrollbar { display: none; }
+.status-chip {
+    flex: 0 0 auto;
+    min-height: 40px;
+    padding: 0 14px;
+    border-radius: 999px;
+    border: 1px solid var(--m-border);
+    background: var(--m-surface);
+    color: var(--m-muted);
+    font-weight: 600;
+    font-size: 0.875rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.status-chip[aria-pressed="true"] { background: var(--m-primary-strong); border-color: var(--m-primary-strong); color: #fff; }
+.status-chip__count { font-size: 0.75rem; opacity: 0.85; }
+
+/* ---------- Photo attachment picker ---------- */
+.photo-picker { display: flex; flex-wrap: wrap; gap: 10px; }
+.photo-picker__btn {
+    min-height: var(--m-touch);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.photo-previews { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.photo-previews__item { position: relative; width: 76px; }
+.photo-previews__item img { width: 76px; height: 76px; object-fit: cover; border-radius: 10px; border: 1px solid var(--m-border); }
+.photo-previews__item .file-chip {
+    width: 76px; height: 76px; border-radius: 10px; border: 1px solid var(--m-border);
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    font-size: 0.7rem; padding: 4px; word-break: break-all; background: #f5f8fa;
+}
+.photo-previews__remove {
+    position: absolute; top: -8px; inset-inline-start: -8px;
+    width: 28px; height: 28px; border-radius: 50%; border: 0;
+    background: #f1416c; color: #fff; display: flex; align-items: center; justify-content: center;
+}
+.photo-previews__remove::after { content: ''; position: absolute; inset: -10px; } /* expand tap area to 48px */
+.photo-previews__size { display: block; font-size: 0.7rem; color: var(--m-muted); text-align: center; }
+
+/* ---------- Ticket conversation on mobile ---------- */
+@media (max-width: 991.98px) {
+    .reply-dock {
+        position: sticky;
+        bottom: calc(var(--m-nav-height) + var(--m-safe-bottom));
+        z-index: 5;
+        background: var(--m-surface);
+        padding: 10px 0;
+        border-top: 1px solid var(--m-border);
+    }
+}
+
+/* ---------- Install banner ---------- */
+.install-banner {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px; margin-bottom: 16px;
+    border-radius: var(--m-radius);
+    background: #e8f6ff; border: 1px solid #b3e0fd; color: var(--m-text);
+}
+.install-banner[hidden] { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+    .hover-lift:hover, .filter-btn:hover, .filter-btn.active { transform: none !important; }
+}
