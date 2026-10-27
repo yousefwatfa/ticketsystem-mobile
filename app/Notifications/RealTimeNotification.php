@@ -31,6 +31,13 @@ class RealTimeNotification extends Notification implements ShouldBroadcastNow{
     {
         $channels = ['database', 'broadcast'];
 
+        // phones/desktops that enabled push from the profile page (PWA).
+        // Added before Telegram: a failing channel stops the ones after it,
+        // and Telegram fails for stale chat ids or a missing token.
+        if (method_exists($notifiable, 'pushSubscriptions') && $notifiable->pushSubscriptions()->exists()) {
+            $channels[] = WebPushChannel::class;
+        }
+
         // user object may have telegram_number property
         if (!empty($notifiable->telegram_number)) {
             $channels[] = TelegramChannel::class;
@@ -42,11 +49,6 @@ class RealTimeNotification extends Notification implements ShouldBroadcastNow{
             if (!empty($route)) {
                 $channels[] = TelegramChannel::class;
             }
-        }
-
-        // phones/desktops that enabled push from the profile page (PWA)
-        if (method_exists($notifiable, 'pushSubscriptions') && $notifiable->pushSubscriptions()->exists()) {
-            $channels[] = WebPushChannel::class;
         }
 
         return array_unique($channels);
