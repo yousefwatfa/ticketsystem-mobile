@@ -9,7 +9,10 @@
     "userInterfaceStyle": "light",
     "ios": {
       "bundleIdentifier": "ps.gov.nmc.tickets",
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "ExpoLocalization_forcesRTL": true
+      }
     },
     "android": {
       "package": "ps.gov.nmc.tickets",
@@ -69,6 +72,18 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "forcesRTL": true,
+      "eas": {
+        "projectId": "8aa4871a-a4a1-4f6b-bb2c-45e6c2659fb3"
+      }
+    },
+    "owner": "yousefwatfa"
   }
 }

@@ -1,0 +1,20 @@
+# EAS Build uploads from the git root. Only the Expo app is needed, so the
+# Laravel server code (app/, config/, routes/, ...) never leaves the hospital.
+# This file replaces .gitignore for EAS, so mobile-app's ignores are repeated here.
+/*
+!/mobile-app
+
+/mobile-app/node_modules/
+/mobile-app/.expo/
+/mobile-app/dist/
+/mobile-app/web-build/
+/mobile-app/expo-env.d.ts
+/mobile-app/android/
+/mobile-app/ios/
+/mobile-app/.kotlin/
+/mobile-app/*.jks
+/mobile-app/*.p8
+/mobile-app/*.p12
+/mobile-app/*.key
+/mobile-app/*.mobileprovision
+/mobile-app/.env*
