@@ -46,13 +46,12 @@ src/
 
 Buttons for actions come from the ticket's `can` object returned by the API, so permissions live only on the server.
 
-## Builds (next step)
+## Builds
 
-Uses EAS (cloud builds, no Mac needed):
+Uses EAS (cloud builds, no Mac needed). The project is linked (`extra.eas.projectId`), and the root `.easignore` uploads only this folder.
 
 ```bash
 npx eas-cli@latest login
-npx eas-cli@latest build:configure
 npx eas-cli@latest build -p android --profile preview   # installable APK
 npx eas-cli@latest build -p ios                         # needs an Apple Developer account
 ```
@@ -67,12 +66,10 @@ Implemented in `src/lib/push.ts`, `src/lib/useNotificationTaps.ts`, `src/lib/unr
 - Bell with unread badge in every tab header; the notifications screen marks all as read.
 - Account screen shows the push state (enabled / denied / unavailable + reason) with a retry button.
 
-To make it work on a phone:
+Android push goes through Firebase Cloud Messaging:
 
-```bash
-npx eas-cli@latest init                                   # adds extra.eas.projectId to app.json
-npx eas-cli@latest build -p android --profile development # or preview
-```
+- `google-services.json` (Firebase project `ticketsystem-15fed`) is committed and set as `android.googleServicesFile` in `app.json`.
+- The FCM V1 service account key is uploaded to EAS (`eas credentials` → Android → Google Service Account, or expo.dev → Credentials). Keep the key file (`fcm-service-account.json`) out of git; it is ignored.
 
 Remote push does **not** work in Expo Go on Android (SDK 53+) — the app detects this and explains it in the Account screen. Web has no push; the bell and list still work.
 

@@ -45,6 +45,8 @@ export default function TicketScreen() {
   const [uploading, setUploading] = useState(false);
   const [acting, setActing] = useState<Action | null>(null);
   const scrollRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
+  // Scroll once the new reply is laid out; a fixed timeout fired before the list grew.
+  const scrollToEndOnResize = useRef(false);
 
   const load = useCallback(async () => {
     try {
@@ -73,7 +75,7 @@ export default function TicketScreen() {
       const result = await api<{ data: Message }>(`/tickets/${ticket.id}/messages`, { method: 'POST', body: { content: reply.trim() } });
       setTicket({ ...ticket, messages: [...(ticket.messages ?? []), result.data] });
       setReply('');
-      setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
+      scrollToEndOnResize.current = true;
       void load(); // status may change (first admin reply)
     } catch (e) {
       setNotice((e as ApiError).message);
@@ -140,6 +142,11 @@ export default function TicketScreen() {
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={90}>
         <ScrollView
           ref={scrollRef}
+          onContentSizeChange={() => {
+            if (!scrollToEndOnResize.current) return;
+            scrollToEndOnResize.current = false;
+            scrollRef.current?.scrollToEnd({ animated: true });
+          }}
           contentContainerStyle={styles.container}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); void load(); }} colors={[colors.primary]} />}>
           {notice ? <Banner message={notice} tone="info" /> : null}
@@ -169,7 +176,7 @@ export default function TicketScreen() {
                   <Button title="تأكيد الحل" icon="checkmark-done" variant="success" onPress={() => runAction('confirm')} loading={acting === 'confirm'} style={styles.flex} />
                 ) : null}
                 {ticket.can.not_fixed ? (
-                  <Button title="المشكلة مستمرة" icon="refresh" variant="danger" onPress={() => runAction('not_fixed')} loading={acting === 'not_fixed'} style={styles.flex} />
+                  <Button title="لم تُحل" icon="refresh" variant="danger" onPress={() => runAction('not_fixed')} loading={acting === 'not_fixed'} style={styles.flex} />
                 ) : null}
               </View>
             </Card>
