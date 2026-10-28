@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "871677262997",
+    "project_id": "ticketsystem-15fed",
+    "storage_bucket": "ticketsystem-15fed.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:871677262997:android:73c8d96eec395a40d2af9c",
+        "android_client_info": {
+          "package_name": "ps.gov.nmc.tickets"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAekPTllmT_j_m30awZwhvkDXTQa45PjGY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

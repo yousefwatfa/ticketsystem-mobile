@@ -20,6 +20,7 @@
         "backgroundColor": "#FFFFFF",
         "foregroundImage": "./assets/images/adaptive-icon.png"
       },
+      "googleServicesFile": "./google-services.json",
       "predictiveBackGestureEnabled": false
     },
     "web": {

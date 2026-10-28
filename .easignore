@@ -18,3 +18,5 @@
 /mobile-app/*.key
 /mobile-app/*.mobileprovision
 /mobile-app/.env*
+/mobile-app/*firebase-adminsdk*.json
+/mobile-app/fcm-service-account*.json
